@@ -211,8 +211,12 @@
             btn.innerHTML = `<div>${btnCode}</div>`;
 
             btn.onclick = function() {
-                if(confirm(`[${currentUnit}호기] ${btnCode}\n교체 기록하시겠습니까?`)) {
-                    sendData(btnCode, btn);
+                // 팝업 없이 바로 전송 (노션 호환성 해결)
+    sendData(btnCode, btn);
+    
+    // (선택사항) 클릭했다는 느낌을 주기 위해 진동(모바일) 추가
+    if (navigator.vibrate) {
+        navigator.vibrate(50);
                 }
             };
             container.appendChild(btn);
