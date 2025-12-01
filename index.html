@@ -93,8 +93,8 @@
         /* 그리드 레이아웃 */
         .grid-wrapper {
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 4px;
+            grid-template-columns: repeat(8, 1fr); /* 8칸 균등 분배 */
+            gap: 12px; /* 선이 들어갈 공간 확보를 위해 간격을 살짝 넓힘 */
         }
 
         .brush-btn {
@@ -120,11 +120,27 @@
             color: white;
             border-color: #388e3c;
         }
+
+        /* ========================================= */
+        /* [핵심] 가운데 회색 구분선 만들기 코드      */
+        /* ========================================= */
         
-        /* 4개씩 묶음 구분 (마진) */
+        /* 왼쪽 그룹의 마지막 버튼(4번째 열) 기준잡기 */
         .grid-wrapper > div:nth-child(8n+4) {
-            margin-right: 8px;
+            position: relative;
         }
+
+        /* 가상의 회색 선 그리기 */
+        .grid-wrapper > div:nth-child(8n+4)::after {
+            content: "";
+            position: absolute;
+            right: -7px;      /* 오른쪽 빈 공간 가운데로 위치 */
+            top: 2px;
+            bottom: 2px;
+            width: 1px;       /* 선 두께 */
+            background-color: #bbb; /* 회색 */
+        }
+        /* ========================================= */
 
     </style>
 </head>
@@ -171,10 +187,11 @@
 
     <script>
         // ==========================================
-        // 1. 구글 스크립트 URL 입력 (필수!)
+        // ▼ 여기에 구글 스크립트 URL을 넣어주세요 ▼
         // ==========================================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQeIRIfZN0BHD1RHOpM28kdiN5lWY-Mxni_5L6DMuAp2hylAe_USg5C40Z7CC1izn9-w/exec"; 
-        
+        // ==========================================
+
         let currentUnit = 3;
 
         // 2. 층별 ID 매핑 정보 (층수: {왼쪽번호, 오른쪽번호})
@@ -187,13 +204,12 @@
 
         const cols = ['A', 'B', 'C', 'D'];
 
-        // 3. 그리드 생성 함수 (order 배열을 받아서 순서 결정)
+        // 3. 그리드 생성 함수
         function createGrid(elementId, prefix, orderList) {
             const container = document.getElementById(elementId);
             container.innerHTML = ""; 
 
             // 전달받은 순서대로 버튼 생성
-            // YARD는 [4,3,2,1], BOILER는 [1,2,3,4] 순서로 들어옴
             orderList.forEach(level => {
                 const map = levelMapping[level];
                 
@@ -211,12 +227,12 @@
             btn.innerHTML = `<div>${btnCode}</div>`;
 
             btn.onclick = function() {
-                // 팝업 없이 바로 전송 (노션 호환성 해결)
-    sendData(btnCode, btn);
-    
-    // (선택사항) 클릭했다는 느낌을 주기 위해 진동(모바일) 추가
-    if (navigator.vibrate) {
-        navigator.vibrate(50);
+                // [수정됨] 팝업 없이 바로 전송 (노션 앱 호환성)
+                sendData(btnCode, btn);
+                
+                // (선택사항) 클릭 시 진동 효과
+                if (navigator.vibrate) {
+                    navigator.vibrate(50); 
                 }
             };
             container.appendChild(btn);
@@ -224,15 +240,14 @@
 
         // 초기화 실행
         function init() {
-            // YARD: 위에서부터 4, 3, 2, 1 (1이 아래쪽 = 중심쪽)
+            // YARD: 위에서부터 4, 3, 2, 1
             const yardOrder = [4, 3, 2, 1];
             
-            // BOILER: 위에서부터 1, 2, 3, 4 (1이 위쪽 = 중심쪽) - 대칭!
+            // BOILER: 위에서부터 1, 2, 3, 4 (대칭)
             const boilerOrder = [1, 2, 3, 4];
 
             createGrid('grid-CY', 'C/Y', yardOrder);
             createGrid('grid-TY', 'T/Y', yardOrder);
-            
             createGrid('grid-CB', 'C/B', boilerOrder);
             createGrid('grid-TB', 'T/B', boilerOrder);
         }
@@ -241,10 +256,10 @@
             currentUnit = unit;
             document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
-            alert(`${unit}호기로 설정되었습니다.`);
         }
 
         function sendData(locationCode, btnElement) {
+            // 시각적 피드백
             btnElement.classList.add('clicked');
             
             const payload = {
@@ -257,7 +272,7 @@
                 mode: 'no-cors',
                 body: JSON.stringify(payload)
             }).then(() => {
-                // 전송 성공
+                // 성공적으로 보냄
             }).catch(err => console.error(err));
         }
 
