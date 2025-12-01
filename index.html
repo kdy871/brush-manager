@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>브러쉬 교체 모니터링</title>
+    <style>
+        :root {
+            --yard-bg: #f3e5f5;
+            --yard-header: #9c27b0;
+            --boiler-bg: #fff8e1;
+            --boiler-header: #fbc02d;
+            --btn-base: #fff;
+            --btn-hover: #e3f2fd;
+        }
+
+        body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; background: #fafafa; }
+        h2 { text-align: center; margin-bottom: 10px; }
+
+        /* 호기 선택 탭 */
+        .unit-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .unit-btn {
+            padding: 10px 30px;
+            font-size: 18px;
+            border: 2px solid #333;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .unit-btn.active {
+            background: #333;
+            color: #fff;
+        }
+
+        /* 메인 레이아웃 */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 방향 섹션 */
+        .direction-section {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .yard-theme .section-header { background-color: var(--yard-header); }
+        .yard-theme .content { background-color: var(--yard-bg); }
+        
+        .boiler-theme .section-header { background-color: var(--boiler-header); }
+        .boiler-theme .content { background-color: var(--boiler-bg); }
+
+        .content {
+            display: flex;
+            padding: 15px;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .equipment-part {
+            flex: 1;
+            min-width: 300px;
+        }
+        .part-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #444;
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+            padding-bottom: 5px;
+        }
+
+        /* 그리드 레이아웃 */
+        .grid-wrapper {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+        }
+
+        .brush-btn {
+            background-color: var(--btn-base);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px 2px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 11px;
+            transition: all 0.2s;
+            height: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .brush-btn:hover { background-color: var(--btn-hover); border-color: #2196f3; }
+        
+        .brush-btn.clicked {
+            background-color: #4caf50;
+            color: white;
+            border-color: #388e3c;
+        }
+        
+        /* 4개씩 묶음 구분 (마진) */
+        .grid-wrapper > div:nth-child(8n+4) {
+            margin-right: 8px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h2>🏭 브러쉬 교체 모니터링</h2>
+    
+    <div class="unit-selector">
+        <button class="unit-btn active" onclick="setUnit(3)">#3호기</button>
+        <button class="unit-btn" onclick="setUnit(4)">#4호기</button>
+    </div>
+
+    <div class="main-container">
+        
+        <div class="direction-section yard-theme">
+            <div class="section-header">YARD 방향</div>
+            <div class="content">
+                <div class="equipment-part">
+                    <div class="part-title">COLLECTOR (C/Y)</div>
+                    <div class="grid-wrapper" id="grid-CY"></div>
+                </div>
+                <div class="equipment-part">
+                    <div class="part-title">TURBINE (T/Y)</div>
+                    <div class="grid-wrapper" id="grid-TY"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="direction-section boiler-theme">
+            <div class="section-header">BOILER 방향</div>
+            <div class="content">
+                <div class="equipment-part">
+                    <div class="part-title">COLLECTOR (C/B)</div>
+                    <div class="grid-wrapper" id="grid-CB"></div>
+                </div>
+                <div class="equipment-part">
+                    <div class="part-title">TURBINE (T/B)</div>
+                    <div class="grid-wrapper" id="grid-TB"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. 구글 스크립트 URL 입력 (필수!)
+        // ==========================================
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQeIRIfZN0BHD1RHOpM28kdiN5lWY-Mxni_5L6DMuAp2hylAe_USg5C40Z7CC1izn9-w/exec"; 
+        
+        let currentUnit = 3;
+
+        // 2. 층별 ID 매핑 정보 (층수: {왼쪽번호, 오른쪽번호})
+        const levelMapping = {
+            4: { left: 4, right: 8 },
+            3: { left: 3, right: 7 },
+            2: { left: 2, right: 6 },
+            1: { left: 1, right: 5 }
+        };
+
+        const cols = ['A', 'B', 'C', 'D'];
+
+        // 3. 그리드 생성 함수 (order 배열을 받아서 순서 결정)
+        function createGrid(elementId, prefix, orderList) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = ""; 
+
+            // 전달받은 순서대로 버튼 생성
+            // YARD는 [4,3,2,1], BOILER는 [1,2,3,4] 순서로 들어옴
+            orderList.forEach(level => {
+                const map = levelMapping[level];
+                
+                // 왼쪽 그룹 (예: 4A~4D)
+                cols.forEach(col => createBtn(container, prefix, map.left, col));
+                // 오른쪽 그룹 (예: 8A~8D)
+                cols.forEach(col => createBtn(container, prefix, map.right, col));
+            });
+        }
+
+        function createBtn(container, prefix, num, col) {
+            const btnCode = `${prefix}-${num}${col}`;
+            const btn = document.createElement('div');
+            btn.className = 'brush-btn';
+            btn.innerHTML = `<div>${btnCode}</div>`;
+
+            btn.onclick = function() {
+                if(confirm(`[${currentUnit}호기] ${btnCode}\n교체 기록하시겠습니까?`)) {
+                    sendData(btnCode, btn);
+                }
+            };
+            container.appendChild(btn);
+        }
+
+        // 초기화 실행
+        function init() {
+            // YARD: 위에서부터 4, 3, 2, 1 (1이 아래쪽 = 중심쪽)
+            const yardOrder = [4, 3, 2, 1];
+            
+            // BOILER: 위에서부터 1, 2, 3, 4 (1이 위쪽 = 중심쪽) - 대칭!
+            const boilerOrder = [1, 2, 3, 4];
+
+            createGrid('grid-CY', 'C/Y', yardOrder);
+            createGrid('grid-TY', 'T/Y', yardOrder);
+            
+            createGrid('grid-CB', 'C/B', boilerOrder);
+            createGrid('grid-TB', 'T/B', boilerOrder);
+        }
+
+        function setUnit(unit) {
+            currentUnit = unit;
+            document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            alert(`${unit}호기로 설정되었습니다.`);
+        }
+
+        function sendData(locationCode, btnElement) {
+            btnElement.classList.add('clicked');
+            
+            const payload = {
+                brushId: `${currentUnit}호기`,
+                location: locationCode
+            };
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(payload)
+            }).then(() => {
+                // 전송 성공
+            }).catch(err => console.error(err));
+        }
+
+        init();
+    </script>
+</body>
+</html>

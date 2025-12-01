@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>브러쉬 관리 대시보드</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; background: #f0f2f5; height: 100vh; display: flex; flex-direction: column; }
+        
+        header { background: #333; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { margin: 0; font-size: 1.2rem; }
+        
+        .container { display: flex; flex: 1; overflow: hidden; }
+        
+        /* 왼쪽: 리스트 영역 */
+        .list-panel {
+            width: 350px;
+            background: white;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .search-box { padding: 15px; border-bottom: 1px solid #eee; }
+        .search-box input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        
+        .item-list { list-style: none; padding: 0; margin: 0; }
+        .item-row {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .item-row:hover { background: #f8f9fa; }
+        .item-row.active { background: #e3f2fd; border-left: 4px solid #2196f3; }
+        
+        .item-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: bold; }
+        .item-sub { font-size: 0.85rem; color: #666; display: flex; justify-content: space-between; }
+        
+        /* 오른쪽: 차트 영역 */
+        .chart-panel { flex: 1; padding: 30px; display: flex; flex-direction: column; overflow-y: auto; }
+        .chart-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: 400px; position: relative; }
+        .info-card { margin-bottom: 20px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        #loading { text-align: center; padding: 20px; color: #666; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>📊 브러쉬 교체 현황</h1>
+        <button onclick="loadStats()" style="padding: 5px 10px; cursor:pointer;">새로고침</button>
+    </header>
+
+    <div class="container">
+        <div class="list-panel">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="위치 검색 (예: C/Y-4A)" onkeyup="filterList()">
+            </div>
+            <div id="loading">데이터 불러오는 중...</div>
+            <ul class="item-list" id="brushList"></ul>
+        </div>
+
+        <div class="chart-panel">
+            <div class="info-card">
+                <h2 id="detailTitle" style="margin-top:0;">선택된 브러쉬 없음</h2>
+                <p id="detailText">왼쪽 목록에서 브러쉬를 선택하면 상세 기록과 그래프가 나타납니다.</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ======================================================
+        // ▼ 아래 따옴표 안에 구글 앱스 스크립트 URL을 붙여넣으세요 ▼
+        // ======================================================
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQeIRIfZN0BHD1RHOpM28kdiN5lWY-Mxni_5L6DMuAp2hylAe_USg5C40Z7CC1izn9-w/exec"; 
+        // ======================================================
+
+        let allData = []; 
+        let myChart = null; 
+
+        window.onload = loadStats;
+
+        function loadStats() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('brushList').innerHTML = '';
+            
+            fetch(`${SCRIPT_URL}?action=getStats`)
+            .then(res => res.json())
+            .then(data => {
+                allData = data; 
+                renderList(data); 
+                document.getElementById('loading').style.display = 'none';
+            })
+            .catch(err => alert("데이터 로딩 실패: " + err));
+        }
+
+        function renderList(data) {
+            const list = document.getElementById('brushList');
+            list.innerHTML = "";
+            
+            data.forEach(item => {
+                let dateStr = "-";
+                if(item.lastDate) {
+                    const d = new Date(item.lastDate);
+                    dateStr = `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
+                }
+
+                const li = document.createElement('li');
+                li.className = 'item-row';
+                // 수정된 부분: 특수문자 처리를 위해 loadHistory 호출
+                li.onclick = () => loadHistory(item, li);
+                li.innerHTML = `
+                    <div class="item-header">
+                        <span>${item.location}</span>
+                        <span style="color:${item.count > 5 ? 'red' : 'green'}">${item.count}회</span>
+                    </div>
+                    <div class="item-sub">
+                        <span>${item.unit}</span>
+                        <span>${dateStr}</span>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function filterList() {
+            const keyword = document.getElementById('searchInput').value.toUpperCase();
+            const filtered = allData.filter(item => 
+                item.location.toUpperCase().includes(keyword) || 
+                String(item.unit).includes(keyword)
+            );
+            renderList(filtered);
+        }
+
+        // ▼▼▼ 여기가 수정된 핵심 함수입니다 ▼▼▼
+        function loadHistory(item, element) {
+            // 1. 선택 효과
+            document.querySelectorAll('.item-row').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            // 2. 제목 변경
+            document.getElementById('detailTitle').innerText = `[${item.unit}] ${item.location}`;
+            document.getElementById('detailText').innerText = "데이터 분석 중...";
+
+            // 3. 히스토리 요청 (특수문자 / 처리 적용됨)
+            fetch(`${SCRIPT_URL}?action=getHistory&location=${encodeURIComponent(item.location)}`)
+            .then(res => res.json())
+            .then(dates => {
+                drawChart(dates);
+                document.getElementById('detailText').innerText = `총 ${dates.length}번 교체되었습니다.`;
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('detailText').innerText = "데이터를 불러오지 못했습니다.";
+            });
+        }
+        // ▲▲▲ 수정 완료 ▲▲▲
+
+        function drawChart(dateStrings) {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            
+            const dates = dateStrings.map(d => new Date(d)).sort((a,b) => a-b);
+            const labels = [];
+            const diffDays = [];
+
+            for(let i=1; i<dates.length; i++) {
+                const diffTime = Math.abs(dates[i] - dates[i-1]);
+                const diffDay = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                
+                const d1 = dates[i-1].toISOString().slice(2,10).replace(/-/g,'.');
+                const d2 = dates[i].toISOString().slice(2,10).replace(/-/g,'.');
+                
+                labels.push(`${d2}`); 
+                diffDays.push(diffDay); 
+            }
+
+            if(myChart) myChart.destroy();
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '사용 기간 (일)',
+                        data: diffDays,
+                        borderColor: '#2196f3',
+                        backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: '사용 일수' } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: '교체 주기 추이 그래프' }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
