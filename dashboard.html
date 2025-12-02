@@ -49,9 +49,9 @@
         </div>
     </div>
     <script>
-        // ▼▼▼ 여기에 방금 복사한 새 주소를 넣어주세요! ▼▼▼
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyn5VaSQ0Fd21EgY5OcHQRPc7-oRpwQTiGzoaJlXnWeNCPPpM3CWUynSGPnjYKb5LO7jg/exec"; 
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+        // ▼▼▼ 선생님의 구글 앱스 스크립트 주소 (반드시 확인하세요!) ▼▼▼
+        const SCRIPT_URL = "YOUR_GOOGLE_SCRIPT_URL"; 
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         let allData = []; 
         let myChart = null; 
@@ -68,6 +68,33 @@
                 allData = data; 
                 renderList(data); 
                 document.getElementById('loading').style.display = 'none';
+
+                // =========================================================
+                // [수정됨] 100% 정확하게 찾아서 클릭하는 기능
+                // =========================================================
+                const params = new URLSearchParams(window.location.search);
+                const pUnit = params.get('unit');     
+                const pLoc = params.get('location');  
+
+                if(pUnit && pLoc) {
+                    // 1. 검색창에 값 넣기
+                    document.getElementById('searchInput').value = pLoc;
+                    
+                    // 2. 목록 필터링
+                    filterList();
+
+                    // 3. [핵심] 텍스트 비교가 아니라 '이름표(Attribute)'로 정확히 찾기
+                    setTimeout(() => {
+                        // data-unit과 data-location 속성이 정확히 일치하는 녀석을 찾음
+                        const targetItem = document.querySelector(`.item-row[data-unit="${pUnit}"][data-location="${pLoc}"]`);
+                        
+                        if(targetItem) {
+                            targetItem.click(); // 찾았으면 클릭!
+                        } else {
+                            console.log("일치하는 브러쉬를 찾을 수 없습니다:", pUnit, pLoc);
+                        }
+                    }, 200); 
+                }
             })
             .catch(err => alert("데이터 로딩 실패: " + err));
         }
@@ -84,6 +111,11 @@
                 }
                 const li = document.createElement('li');
                 li.className = 'item-row';
+                
+                // [핵심] 여기에 보이지 않는 이름표(data-unit, data-location)를 붙입니다!
+                li.setAttribute('data-unit', item.unit);
+                li.setAttribute('data-location', item.location);
+                
                 li.onclick = () => loadHistory(item, li);
                 li.innerHTML = `
                     <div class="item-header">
@@ -115,7 +147,6 @@
             document.getElementById('detailTitle').innerText = `[${item.unit}] ${item.location}`;
             document.getElementById('detailText').innerText = "데이터 분석 중...";
 
-            // [수정됨] 호기(unit) 정보까지 같이 보내서 정확한 데이터 가져오기
             fetch(`${SCRIPT_URL}?action=getHistory&location=${encodeURIComponent(item.location)}&unit=${encodeURIComponent(item.unit)}`)
             .then(res => res.json())
             .then(dates => {

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>브러쉬 이력 조회 (확인용)</title>
+    <style>
+        /* 기존 스타일과 동일하게 유지 */
+        :root {
+            --yard-bg: #f3e5f5; --yard-header: #9c27b0;
+            --boiler-bg: #fff8e1; --boiler-header: #fbc02d;
+            --btn-base: #fff; --btn-hover: #e3f2fd;
+        }
+        body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; background: #fafafa; }
+        h2 { text-align: center; margin-bottom: 10px; }
+        .unit-selector { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .unit-btn { padding: 10px 30px; font-size: 18px; border: 2px solid #333; background: #fff; cursor: pointer; border-radius: 8px; font-weight: bold; }
+        .unit-btn.active { background: #333; color: #fff; }
+        .main-container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .direction-section { border: 1px solid #ddd; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .section-header { padding: 10px; text-align: center; font-weight: bold; font-size: 1.2rem; color: white; }
+        .yard-theme .section-header { background-color: var(--yard-header); }
+        .yard-theme .content { background-color: var(--yard-bg); }
+        .boiler-theme .section-header { background-color: var(--boiler-header); }
+        .boiler-theme .content { background-color: var(--boiler-bg); }
+        .content { display: flex; padding: 15px; gap: 20px; justify-content: center; flex-wrap: wrap; }
+        .equipment-part { flex: 1; min-width: 300px; }
+        .part-title { text-align: center; font-weight: bold; margin-bottom: 10px; color: #444; border-bottom: 2px solid rgba(0,0,0,0.1); padding-bottom: 5px; }
+        
+        /* 10px 갭과 구분선 적용됨 */
+        .grid-wrapper { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; }
+        .brush-btn { background-color: var(--btn-base); border: 1px solid #ccc; border-radius: 4px; padding: 8px 2px; cursor: pointer; text-align: center; font-size: 11px; transition: all 0.2s; height: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .brush-btn:hover { background-color: var(--btn-hover); border-color: #2196f3; }
+        
+        .grid-wrapper > div:nth-child(8n+4) { position: relative; }
+        .grid-wrapper > div:nth-child(8n+4)::after { content: ""; position: absolute; right: -6px; top: 5px; bottom: 5px; width: 2px; background-color: #d1d1d1; border-radius: 2px; }
+    </style>
+</head>
+<body>
+
+    <h2>🔍 브러쉬 이력 조회 (기록X)</h2>
+    
+    <div class="unit-selector">
+        <button class="unit-btn active" onclick="setUnit(3)">#3호기</button>
+        <button class="unit-btn" onclick="setUnit(4)">#4호기</button>
+    </div>
+
+    <div class="main-container">
+        <div class="direction-section yard-theme">
+            <div class="section-header">YARD 방향</div>
+            <div class="content">
+                <div class="equipment-part"><div class="part-title">COLLECTOR (C/Y)</div><div class="grid-wrapper" id="grid-CY"></div></div>
+                <div class="equipment-part"><div class="part-title">TURBINE (T/Y)</div><div class="grid-wrapper" id="grid-TY"></div></div>
+            </div>
+        </div>
+        <div class="direction-section boiler-theme">
+            <div class="section-header">BOILER 방향</div>
+            <div class="content">
+                <div class="equipment-part"><div class="part-title">COLLECTOR (C/B)</div><div class="grid-wrapper" id="grid-CB"></div></div>
+                <div class="equipment-part"><div class="part-title">TURBINE (T/B)</div><div class="grid-wrapper" id="grid-TB"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ▼▼▼ 대시보드 주소를 여기에 넣으세요! (dashboard.html로 끝나는 주소) ▼▼▼
+        const DASHBOARD_URL = "https://kdy871.github.io/brush-manager/dashboard.html"; 
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+        let currentUnit = 3;
+        const levelMapping = { 4: { left: 4, right: 8 }, 3: { left: 3, right: 7 }, 2: { left: 2, right: 6 }, 1: { left: 1, right: 5 } };
+        const cols = ['A', 'B', 'C', 'D'];
+
+        function createGrid(elementId, prefix, orderList) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = ""; 
+            orderList.forEach(level => {
+                const map = levelMapping[level];
+                cols.forEach(col => createBtn(container, prefix, map.left, col));
+                cols.forEach(col => createBtn(container, prefix, map.right, col));
+            });
+        }
+
+        function createBtn(container, prefix, num, col) {
+            const btnCode = `${prefix}-${num}${col}`;
+            const btn = document.createElement('div');
+            btn.className = 'brush-btn';
+            btn.innerHTML = `<div>${btnCode}</div>`;
+
+            // [핵심] 클릭 시 저장하지 않고 대시보드로 이동!
+            btn.onclick = function() {
+                // 주소 뒤에 ?unit=3호기&location=C/Y-1A 처럼 꼬리표를 달아서 보냄
+                const targetUrl = `${DASHBOARD_URL}?unit=${encodeURIComponent(currentUnit + '호기')}&location=${encodeURIComponent(btnCode)}`;
+                window.location.href = targetUrl;
+            };
+            container.appendChild(btn);
+        }
+
+        function init() {
+            const yardOrder = [4, 3, 2, 1];
+            const boilerOrder = [1, 2, 3, 4];
+            createGrid('grid-CY', 'C/Y', yardOrder);
+            createGrid('grid-TY', 'T/Y', yardOrder);
+            createGrid('grid-CB', 'C/B', boilerOrder);
+            createGrid('grid-TB', 'T/B', boilerOrder);
+        }
+
+        function setUnit(unit) {
+            currentUnit = unit;
+            document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        init();
+    </script>
+</body>
+</html>
