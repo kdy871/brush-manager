@@ -10,38 +10,53 @@
         header { background: #333; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
         h1 { margin: 0; font-size: 1.2rem; }
         .container { display: flex; flex: 1; overflow: hidden; }
-        .list-panel { width: 350px; background: white; border-right: 1px solid #ddd; overflow-y: auto; display: flex; flex-direction: column; }
-        .search-box { padding: 15px; border-bottom: 1px solid #eee; }
-        .search-box input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        
+        /* ▼▼▼ [수정된 부분] 너비를 350px -> 180px로 줄임 ▼▼▼ */
+        .list-panel { 
+            width: 180px; 
+            background: white; 
+            border-right: 1px solid #ddd; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
+
+        .search-box { padding: 10px; border-bottom: 1px solid #eee; }
+        .search-box input { width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 12px; }
+        
         .item-list { list-style: none; padding: 0; margin: 0; }
-        .item-row { padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s; }
+        .item-row { padding: 12px 10px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s; }
         .item-row:hover { background: #f8f9fa; }
         .item-row.active { background: #e3f2fd; border-left: 4px solid #2196f3; }
-        .item-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: bold; }
-        .item-sub { font-size: 0.85rem; color: #666; display: flex; justify-content: space-between; }
-        .chart-panel { flex: 1; padding: 30px; display: flex; flex-direction: column; overflow-y: auto; }
-        .chart-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: 400px; position: relative; }
-        .info-card { margin-bottom: 20px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        #loading { text-align: center; padding: 20px; color: #666; }
+        
+        /* 좁아진 폭에 맞춰 글자 크기 약간 조절 */
+        .item-header { display: flex; justify-content: space-between; margin-bottom: 3px; font-weight: bold; font-size: 13px; }
+        .item-sub { font-size: 11px; color: #666; display: flex; justify-content: space-between; }
+        
+        .chart-panel { flex: 1; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
+        .chart-container { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: 400px; position: relative; }
+        .info-card { margin-bottom: 15px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        #loading { text-align: center; padding: 20px; color: #666; font-size: 12px; }
     </style>
 </head>
 <body>
     <header>
-        <h1>📊 브러쉬 교체 현황</h1>
-        <button onclick="loadStats()" style="padding: 5px 10px; cursor:pointer;">새로고침</button>
+        <h1>📊 교체 현황</h1>
+        <button onclick="loadStats()" style="padding: 5px 10px; cursor:pointer; font-size:12px;">새로고침</button>
     </header>
     <div class="container">
         <div class="list-panel">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="위치 검색 (예: C/Y-4A)" onkeyup="filterList()">
+                <input type="text" id="searchInput" placeholder="위치 검색" onkeyup="filterList()">
             </div>
-            <div id="loading">데이터 불러오는 중...</div>
+            <div id="loading">로딩중...</div>
             <ul class="item-list" id="brushList"></ul>
         </div>
         <div class="chart-panel">
             <div class="info-card">
-                <h2 id="detailTitle" style="margin-top:0;">선택된 브러쉬 없음</h2>
-                <p id="detailText">왼쪽 목록에서 브러쉬를 선택하면 상세 기록과 그래프가 나타납니다.</p>
+                <h3 id="detailTitle" style="margin-top:0; font-size:16px;">선택된 브러쉬 없음</h3>
+                <p id="detailText" style="font-size:14px; color:#555;">목록에서 선택하세요.</p>
             </div>
             <div class="chart-container">
                 <canvas id="myChart"></canvas>
@@ -49,9 +64,9 @@
         </div>
     </div>
     <script>
-        // ▼▼▼ 선생님의 구글 앱스 스크립트 주소 (반드시 확인하세요!) ▼▼▼
+        // ▼▼▼ 본인 구글 앱스 스크립트 주소 입력 ▼▼▼
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyn5VaSQ0Fd21EgY5OcHQRPc7-oRpwQTiGzoaJlXnWeNCPPpM3CWUynSGPnjYKb5LO7jg/exec"; 
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         let allData = []; 
         let myChart = null; 
@@ -69,34 +84,25 @@
                 renderList(data); 
                 document.getElementById('loading').style.display = 'none';
 
-                // =========================================================
-                // [수정됨] 100% 정확하게 찾아서 클릭하는 기능
-                // =========================================================
                 const params = new URLSearchParams(window.location.search);
                 const pUnit = params.get('unit');     
                 const pLoc = params.get('location');  
 
                 if(pUnit && pLoc) {
-                    // 1. 검색창에 값 넣기
                     document.getElementById('searchInput').value = pLoc;
-                    
-                    // 2. 목록 필터링
                     filterList();
-
-                    // 3. [핵심] 텍스트 비교가 아니라 '이름표(Attribute)'로 정확히 찾기
                     setTimeout(() => {
-                        // data-unit과 data-location 속성이 정확히 일치하는 녀석을 찾음
-                        const targetItem = document.querySelector(`.item-row[data-unit="${pUnit}"][data-location="${pLoc}"]`);
-                        
-                        if(targetItem) {
-                            targetItem.click(); // 찾았으면 클릭!
-                        } else {
-                            console.log("일치하는 브러쉬를 찾을 수 없습니다:", pUnit, pLoc);
+                        const items = document.querySelectorAll('.item-row');
+                        for(let item of items) {
+                            if(item.innerText.includes(pUnit) && item.innerText.includes(pLoc)) {
+                                item.click(); 
+                                break;
+                            }
                         }
                     }, 200); 
                 }
             })
-            .catch(err => alert("데이터 로딩 실패: " + err));
+            .catch(err => alert("로딩 실패: " + err));
         }
 
         function renderList(data) {
@@ -107,12 +113,12 @@
                 let dateStr = "-";
                 if(item.lastDate) {
                     const d = new Date(item.lastDate);
-                    dateStr = `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
+                    // 날짜를 24.12.31 형태로 짧게 줄임 (공간 확보)
+                    dateStr = `${d.getFullYear().toString().slice(2)}.${d.getMonth()+1}.${d.getDate()}`;
                 }
                 const li = document.createElement('li');
                 li.className = 'item-row';
                 
-                // [핵심] 여기에 보이지 않는 이름표(data-unit, data-location)를 붙입니다!
                 li.setAttribute('data-unit', item.unit);
                 li.setAttribute('data-location', item.location);
                 
