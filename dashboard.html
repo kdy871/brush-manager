@@ -7,52 +7,88 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; background: #f0f2f5; height: 100vh; display: flex; flex-direction: column; }
-        header { background: #333; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        header { background: #333; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         h1 { margin: 0; font-size: 1.2rem; }
+        
+        /* 메인 컨테이너 */
         .container { display: flex; flex: 1; overflow: hidden; }
         
-        /* 왼쪽 목록 너비 180px 유지 */
+        /* [PC 기본 스타일] 왼쪽 목록 패널 */
         .list-panel { 
-            width: 180px; 
+            width: 220px; /* PC에서는 적당한 너비 */
             background: white; 
             border-right: 1px solid #ddd; 
             overflow-y: auto; 
             display: flex; 
             flex-direction: column; 
+            flex-shrink: 0;
         }
 
+        /* [PC 기본 스타일] 오른쪽 차트 패널 */
+        .chart-panel { flex: 1; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
+
+        /* ================================================================= */
+        /* ▼▼▼ [핵심] 모바일 화면(폭 768px 이하)일 때 디자인 변경 ▼▼▼ */
+        /* ================================================================= */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column; /* 위아래 배치로 변경 */
+            }
+            
+            .list-panel {
+                width: 100%;       /* 너비 꽉 차게 */
+                height: 35%;       /* 높이는 화면의 35%만 차지 (목록 영역) */
+                border-right: none;
+                border-bottom: 2px solid #ddd;
+            }
+            
+            .chart-panel {
+                width: 100%;       /* 너비 꽉 차게 */
+                height: 65%;       /* 나머지 65%는 그래프 영역 */
+                padding: 10px;     /* 패딩 줄임 */
+            }
+            
+            /* 모바일에서 글자 크기 최적화 */
+            h1 { font-size: 1rem; }
+            .info-card h3 { font-size: 14px; }
+            .info-card p { font-size: 12px; }
+        }
+        /* ================================================================= */
+
         .search-box { padding: 10px; border-bottom: 1px solid #eee; }
-        .search-box input { width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 12px; }
+        .search-box input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        
         .item-list { list-style: none; padding: 0; margin: 0; }
-        .item-row { padding: 12px 10px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s; }
+        .item-row { padding: 12px 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s; }
         .item-row:hover { background: #f8f9fa; }
         .item-row.active { background: #e3f2fd; border-left: 4px solid #2196f3; }
-        .item-header { display: flex; justify-content: space-between; margin-bottom: 3px; font-weight: bold; font-size: 13px; }
-        .item-sub { font-size: 11px; color: #666; display: flex; justify-content: space-between; }
         
-        .chart-panel { flex: 1; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
-        .chart-container { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: 400px; position: relative; }
-        .info-card { margin-bottom: 15px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        #loading { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        .item-header { display: flex; justify-content: space-between; margin-bottom: 3px; font-weight: bold; font-size: 14px; }
+        .item-sub { font-size: 12px; color: #666; display: flex; justify-content: space-between; }
+        
+        .chart-container { background: white; padding: 10px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex: 1; position: relative; min-height: 200px; }
+        .info-card { margin-bottom: 10px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; }
+        #loading { text-align: center; padding: 20px; color: #666; font-size: 13px; }
     </style>
 </head>
 <body>
     <header>
         <h1>📊 교체 현황</h1>
-        <button onclick="loadStats()" style="padding: 5px 10px; cursor:pointer; font-size:12px;">새로고침</button>
+        <button onclick="loadStats()" style="padding: 5px 12px; cursor:pointer; font-size:13px; border:none; border-radius:4px; background:#555; color:white;">새로고침</button>
     </header>
     <div class="container">
         <div class="list-panel">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="위치 검색" onkeyup="filterList()">
+                <input type="text" id="searchInput" placeholder="위치 검색 (예: C/Y-4A)" onkeyup="filterList()">
             </div>
-            <div id="loading">로딩중...</div>
+            <div id="loading">데이터 로딩중...</div>
             <ul class="item-list" id="brushList"></ul>
         </div>
+
         <div class="chart-panel">
             <div class="info-card">
-                <h3 id="detailTitle" style="margin-top:0; font-size:16px;">선택된 브러쉬 없음</h3>
-                <p id="detailText" style="font-size:14px; color:#555;">목록에서 선택하세요.</p>
+                <h3 id="detailTitle" style="margin-top:0;">선택된 브러쉬 없음</h3>
+                <p id="detailText" style="margin-bottom:0; color:#555;">목록에서 선택하세요.</p>
             </div>
             <div class="chart-container">
                 <canvas id="myChart"></canvas>
@@ -60,9 +96,9 @@
         </div>
     </div>
     <script>
-        // ▼▼▼ 본인 구글 앱스 스크립트 주소 입력 (필수!) ▼▼▼
+        // ▼▼▼ 본인의 구글 앱스 스크립트 주소 입력 (필수!) ▼▼▼
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyn5VaSQ0Fd21EgY5OcHQRPc7-oRpwQTiGzoaJlXnWeNCPPpM3CWUynSGPnjYKb5LO7jg/exec"; 
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         let allData = []; 
         let myChart = null; 
@@ -92,6 +128,10 @@
                         for(let item of items) {
                             if(item.innerText.includes(pUnit) && item.innerText.includes(pLoc)) {
                                 item.click(); 
+                                // 모바일에서는 차트가 아래에 있으니 자동으로 스크롤 내려주기
+                                if(window.innerWidth <= 768) {
+                                    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
                                 break;
                             }
                         }
@@ -145,35 +185,32 @@
             element.classList.add('active');
 
             document.getElementById('detailTitle').innerText = `[${item.unit}] ${item.location}`;
-            document.getElementById('detailText').innerText = "데이터 분석 중...";
+            document.getElementById('detailText').innerText = "분석 중...";
 
             fetch(`${SCRIPT_URL}?action=getHistory&location=${encodeURIComponent(item.location)}&unit=${encodeURIComponent(item.unit)}`)
             .then(res => res.json())
             .then(dates => {
                 drawChart(dates);
-                document.getElementById('detailText').innerText = `총 ${dates.length}번 교체되었습니다.`;
+                document.getElementById('detailText').innerText = `총 ${dates.length}번 교체됨`;
             })
             .catch(err => {
                 console.error(err);
-                document.getElementById('detailText').innerText = "데이터를 불러오지 못했습니다.";
+                document.getElementById('detailText').innerText = "로딩 실패";
             });
         }
 
-        // ▼▼▼ [수정됨] 그래프가 0부터 시작하도록 변경된 함수 ▼▼▼
         function drawChart(dateStrings) {
             const ctx = document.getElementById('myChart').getContext('2d');
             const dates = dateStrings.map(d => new Date(d)).sort((a,b) => a-b);
             const labels = [];
             const diffDays = [];
 
-            // [추가] 데이터가 1개 이상이면 첫 번째 날짜를 '0' (시작점)으로 추가
             if (dates.length > 0) {
                 const startD = dates[0].toISOString().slice(2,10).replace(/-/g,'.');
-                labels.push(startD); // 첫 교체일
-                diffDays.push(0);    // 값은 0 (시작)
+                labels.push(startD); 
+                diffDays.push(0);    
             }
 
-            // 두 번째 데이터부터 간격 계산해서 추가
             for(let i=1; i<dates.length; i++) {
                 const diffTime = Math.abs(dates[i] - dates[i-1]);
                 const diffDay = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
@@ -201,8 +238,8 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, title: { display: true, text: '사용 일수' } } },
-                    plugins: { legend: { display: false }, title: { display: true, text: '교체 주기 추이 그래프' } }
+                    scales: { y: { beginAtZero: true, ticks: { maxTicksLimit: 5 } } }, // Y축 눈금 간소화
+                    plugins: { legend: { display: false } } // 범례 숨김 (공간확보)
                 }
             });
         }
