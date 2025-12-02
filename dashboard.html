@@ -13,9 +13,9 @@
         /* 메인 컨테이너 */
         .container { display: flex; flex: 1; overflow: hidden; }
         
-        /* [PC 기본 스타일] 왼쪽 목록 패널 */
+        /* [PC 기본 스타일] */
         .list-panel { 
-            width: 220px; /* PC에서는 적당한 너비 */
+            width: 220px; 
             background: white; 
             border-right: 1px solid #ddd; 
             overflow-y: auto; 
@@ -24,34 +24,34 @@
             flex-shrink: 0;
         }
 
-        /* [PC 기본 스타일] 오른쪽 차트 패널 */
         .chart-panel { flex: 1; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
 
         /* ================================================================= */
-        /* ▼▼▼ [핵심] 모바일 화면(폭 768px 이하)일 때 디자인 변경 ▼▼▼ */
+        /* ▼▼▼ [핵심] 모바일 화면(하단 목록 배치) 디자인 변경 ▼▼▼ */
         /* ================================================================= */
         @media (max-width: 768px) {
             .container {
-                flex-direction: column; /* 위아래 배치로 변경 */
+                /* column-reverse: HTML 순서(목록->차트)를 화면에선 (차트->목록)으로 뒤집음 */
+                flex-direction: column-reverse; 
             }
             
             .list-panel {
-                width: 100%;       /* 너비 꽉 차게 */
-                height: 35%;       /* 높이는 화면의 35%만 차지 (목록 영역) */
+                width: 100%;       
+                height: 25%;       /* 하단 25% (검색창 + 목록 1~2개 보일 정도) */
                 border-right: none;
-                border-bottom: 2px solid #ddd;
+                border-top: 2px solid #ddd; /* 경계선을 위쪽으로 이동 */
             }
             
             .chart-panel {
-                width: 100%;       /* 너비 꽉 차게 */
-                height: 65%;       /* 나머지 65%는 그래프 영역 */
-                padding: 10px;     /* 패딩 줄임 */
+                width: 100%;       
+                height: 75%;       /* 상단 75% (그래프 시원하게) */
+                padding: 10px;     
             }
             
-            /* 모바일에서 글자 크기 최적화 */
             h1 { font-size: 1rem; }
-            .info-card h3 { font-size: 14px; }
-            .info-card p { font-size: 12px; }
+            .info-card { padding: 10px; margin-bottom: 5px; }
+            .info-card h3 { font-size: 14px; margin-bottom: 2px; }
+            .info-card p { font-size: 11px; }
         }
         /* ================================================================= */
 
@@ -59,7 +59,7 @@
         .search-box input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
         
         .item-list { list-style: none; padding: 0; margin: 0; }
-        .item-row { padding: 12px 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s; }
+        .item-row { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s; }
         .item-row:hover { background: #f8f9fa; }
         .item-row.active { background: #e3f2fd; border-left: 4px solid #2196f3; }
         
@@ -128,10 +128,6 @@
                         for(let item of items) {
                             if(item.innerText.includes(pUnit) && item.innerText.includes(pLoc)) {
                                 item.click(); 
-                                // 모바일에서는 차트가 아래에 있으니 자동으로 스크롤 내려주기
-                                if(window.innerWidth <= 768) {
-                                    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                }
                                 break;
                             }
                         }
@@ -238,8 +234,8 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, ticks: { maxTicksLimit: 5 } } }, // Y축 눈금 간소화
-                    plugins: { legend: { display: false } } // 범례 숨김 (공간확보)
+                    scales: { y: { beginAtZero: true, ticks: { maxTicksLimit: 5 } } }, 
+                    plugins: { legend: { display: false } } 
                 }
             });
         }
