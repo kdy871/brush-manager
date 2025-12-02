@@ -11,7 +11,7 @@
         h1 { margin: 0; font-size: 1.2rem; }
         .container { display: flex; flex: 1; overflow: hidden; }
         
-        /* ▼▼▼ [수정된 부분] 너비를 350px -> 180px로 줄임 ▼▼▼ */
+        /* 왼쪽 목록 너비 180px 유지 */
         .list-panel { 
             width: 180px; 
             background: white; 
@@ -20,17 +20,13 @@
             display: flex; 
             flex-direction: column; 
         }
-        /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
 
         .search-box { padding: 10px; border-bottom: 1px solid #eee; }
         .search-box input { width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 12px; }
-        
         .item-list { list-style: none; padding: 0; margin: 0; }
         .item-row { padding: 12px 10px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s; }
         .item-row:hover { background: #f8f9fa; }
         .item-row.active { background: #e3f2fd; border-left: 4px solid #2196f3; }
-        
-        /* 좁아진 폭에 맞춰 글자 크기 약간 조절 */
         .item-header { display: flex; justify-content: space-between; margin-bottom: 3px; font-weight: bold; font-size: 13px; }
         .item-sub { font-size: 11px; color: #666; display: flex; justify-content: space-between; }
         
@@ -64,9 +60,9 @@
         </div>
     </div>
     <script>
-        // ▼▼▼ 본인 구글 앱스 스크립트 주소 입력 ▼▼▼
+        // ▼▼▼ 본인 구글 앱스 스크립트 주소 입력 (필수!) ▼▼▼
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyn5VaSQ0Fd21EgY5OcHQRPc7-oRpwQTiGzoaJlXnWeNCPPpM3CWUynSGPnjYKb5LO7jg/exec"; 
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         let allData = []; 
         let myChart = null; 
@@ -113,12 +109,10 @@
                 let dateStr = "-";
                 if(item.lastDate) {
                     const d = new Date(item.lastDate);
-                    // 날짜를 24.12.31 형태로 짧게 줄임 (공간 확보)
                     dateStr = `${d.getFullYear().toString().slice(2)}.${d.getMonth()+1}.${d.getDate()}`;
                 }
                 const li = document.createElement('li');
                 li.className = 'item-row';
-                
                 li.setAttribute('data-unit', item.unit);
                 li.setAttribute('data-location', item.location);
                 
@@ -165,12 +159,21 @@
             });
         }
 
+        // ▼▼▼ [수정됨] 그래프가 0부터 시작하도록 변경된 함수 ▼▼▼
         function drawChart(dateStrings) {
             const ctx = document.getElementById('myChart').getContext('2d');
             const dates = dateStrings.map(d => new Date(d)).sort((a,b) => a-b);
             const labels = [];
             const diffDays = [];
 
+            // [추가] 데이터가 1개 이상이면 첫 번째 날짜를 '0' (시작점)으로 추가
+            if (dates.length > 0) {
+                const startD = dates[0].toISOString().slice(2,10).replace(/-/g,'.');
+                labels.push(startD); // 첫 교체일
+                diffDays.push(0);    // 값은 0 (시작)
+            }
+
+            // 두 번째 데이터부터 간격 계산해서 추가
             for(let i=1; i<dates.length; i++) {
                 const diffTime = Math.abs(dates[i] - dates[i-1]);
                 const diffDay = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
