@@ -12,7 +12,23 @@
             --btn-base: #fff; --btn-hover: #e3f2fd;
         }
         body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; background: #fafafa; }
-        h2 { text-align: center; margin-bottom: 10px; }
+        
+        /* [수정됨] 헤더 스타일 변경 */
+        h2 { 
+            text-align: center; 
+            margin-bottom: 20px;
+            font-family: 'Arial', 'Helvetica', sans-serif; /* 깔끔한 고딕 폰트 */
+            font-weight: 800; /* 아주 굵게 */
+            font-size: 2.2rem; /* 폰트 크기 키움 */
+            color: #1a1a1a; /* 기본 진한 검정색 */
+            letter-spacing: -0.5px; /* 자간 살짝 좁게 */
+        }
+        
+        /* [추가됨] Manager 텍스트를 위한 파란색 스타일 */
+        .title-highlight {
+            color: #2962ff; /* 쨍한 파란색 */
+        }
+
         .unit-selector { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
         .unit-btn { padding: 10px 30px; font-size: 18px; border: 2px solid #333; background: #fff; cursor: pointer; border-radius: 8px; font-weight: bold; }
         .unit-btn.active { background: #333; color: #fff; }
@@ -60,7 +76,9 @@
 </head>
 <body>
 
-    <h2>🔍 브러쉬 이력 조회 (확인용)</h2>
+    <!-- [수정됨] 텍스트 및 스타일 적용 -->
+    <h2>Generator Brush <span class="title-highlight">Manager</span></h2>
+    
     <div id="loadingMsg">데이터 불러오는 중...</div>
     
     <div class="unit-selector">
@@ -159,6 +177,7 @@
             // 클릭 시 대시보드 이동
             btn.onclick = function() {
                 const targetUrl = `${DASHBOARD_URL}?unit=${encodeURIComponent(currentUnit + '호기')}&location=${encodeURIComponent(btnCode)}`;
+                // iframe 내에서 이동을 시도합니다. 새 창을 원하시면 window.open을 사용하세요.
                 window.location.href = targetUrl;
             };
             container.appendChild(btn);
