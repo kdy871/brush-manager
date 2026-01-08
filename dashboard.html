@@ -1,30 +1,62 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>브러쉬 관리 대시보드</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; background: #f0f2f5; height: 100vh; display: flex; flex-direction: column; }
-        header { background: #333; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-        h1 { margin: 0; font-size: 1.2rem; }
-        
-        /* 메인 컨테이너 */
-        .container { display: flex; flex: 1; overflow: hidden; }
-        
-        /* [PC 기본 스타일] */
-        .list-panel { 
-            width: 220px; 
-            background: white; 
-            border-right: 1px solid #ddd; 
-            overflow-y: auto; 
-            display: flex; 
-            flex-direction: column; 
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f0f2f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #333;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             flex-shrink: 0;
         }
 
-        .chart-panel { flex: 1; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
+        h1 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        /* 메인 컨테이너 */
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* [PC 기본 스타일] */
+        .list-panel {
+            width: 220px;
+            background: white;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .chart-panel {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
 
         /* ================================================================= */
         /* ▼▼▼ [핵심] 모바일 화면(하단 목록 배치) 디자인 변경 ▼▼▼ */
@@ -32,49 +64,130 @@
         @media (max-width: 768px) {
             .container {
                 /* column-reverse: HTML 순서(목록->차트)를 화면에선 (차트->목록)으로 뒤집음 */
-                flex-direction: column-reverse; 
+                flex-direction: column-reverse;
             }
-            
+
             .list-panel {
-                width: 100%;       
-                height: 25%;       /* 하단 25% (검색창 + 목록 1~2개 보일 정도) */
+                width: 100%;
+                height: 25%;
+                /* 하단 25% (검색창 + 목록 1~2개 보일 정도) */
                 border-right: none;
-                border-top: 2px solid #ddd; /* 경계선을 위쪽으로 이동 */
+                border-top: 2px solid #ddd;
+                /* 경계선을 위쪽으로 이동 */
             }
-            
+
             .chart-panel {
-                width: 100%;       
-                height: 75%;       /* 상단 75% (그래프 시원하게) */
-                padding: 10px;     
+                width: 100%;
+                height: 75%;
+                /* 상단 75% (그래프 시원하게) */
+                padding: 10px;
             }
-            
-            h1 { font-size: 1rem; }
-            .info-card { padding: 10px; margin-bottom: 5px; }
-            .info-card h3 { font-size: 14px; margin-bottom: 2px; }
-            .info-card p { font-size: 11px; }
+
+            h1 {
+                font-size: 1rem;
+            }
+
+            .info-card {
+                padding: 10px;
+                margin-bottom: 5px;
+            }
+
+            .info-card h3 {
+                font-size: 14px;
+                margin-bottom: 2px;
+            }
+
+            .info-card p {
+                font-size: 11px;
+            }
         }
+
         /* ================================================================= */
 
-        .search-box { padding: 10px; border-bottom: 1px solid #eee; }
-        .search-box input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
-        
-        .item-list { list-style: none; padding: 0; margin: 0; }
-        .item-row { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s; }
-        .item-row:hover { background: #f8f9fa; }
-        .item-row.active { background: #e3f2fd; border-left: 4px solid #2196f3; }
-        
-        .item-header { display: flex; justify-content: space-between; margin-bottom: 3px; font-weight: bold; font-size: 14px; }
-        .item-sub { font-size: 12px; color: #666; display: flex; justify-content: space-between; }
-        
-        .chart-container { background: white; padding: 10px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex: 1; position: relative; min-height: 200px; }
-        .info-card { margin-bottom: 10px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; }
-        #loading { text-align: center; padding: 20px; color: #666; font-size: 13px; }
+        .search-box {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .item-row {
+            padding: 10px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .item-row:hover {
+            background: #f8f9fa;
+        }
+
+        .item-row.active {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .item-sub {
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            position: relative;
+            min-height: 200px;
+        }
+
+        .info-card {
+            margin-bottom: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+
+        #loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 13px;
+        }
     </style>
 </head>
+
 <body>
     <header>
-        <h1>📊 교체 현황</h1>
-        <button onclick="loadStats()" style="padding: 5px 12px; cursor:pointer; font-size:13px; border:none; border-radius:4px; background:#555; color:white;">새로고침</button>
+        <h1>교체 현황</h1>
+        <button onclick="loadStats()"
+            style="padding: 5px 12px; cursor:pointer; font-size:13px; border:none; border-radius:4px; background:#555; color:white;">새로고침</button>
     </header>
     <div class="container">
         <div class="list-panel">
@@ -97,61 +210,87 @@
     </div>
     <script>
         // ▼▼▼ 본인의 구글 앱스 스크립트 주소 입력 (필수!) ▼▼▼
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyn5VaSQ0Fd21EgY5OcHQRPc7-oRpwQTiGzoaJlXnWeNCPPpM3CWUynSGPnjYKb5LO7jg/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyn5VaSQ0Fd21EgY5OcHQRPc7-oRpwQTiGzoaJlXnWeNCPPpM3CWUynSGPnjYKb5LO7jg/exec";
         // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
-        let allData = []; 
-        let myChart = null; 
+        let allData = [];
+        let myChart = null;
 
         window.onload = loadStats;
 
         function loadStats() {
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('brushList').innerHTML = '';
-            
-            fetch(`${SCRIPT_URL}?action=getStats`)
-            .then(res => res.json())
-            .then(data => {
-                allData = data; 
-                renderList(data); 
-                document.getElementById('loading').style.display = 'none';
+            const loadingEl = document.getElementById('loading');
 
-                const params = new URLSearchParams(window.location.search);
-                const pUnit = params.get('unit');     
-                const pLoc = params.get('location');  
-
-                if(pUnit && pLoc) {
-                    document.getElementById('searchInput').value = pLoc;
-                    filterList();
-                    setTimeout(() => {
-                        const items = document.querySelectorAll('.item-row');
-                        for(let item of items) {
-                            if(item.innerText.includes(pUnit) && item.innerText.includes(pLoc)) {
-                                item.click(); 
-                                break;
-                            }
-                        }
-                    }, 200); 
+            // 1. 캐시 로드
+            const cachedData = localStorage.getItem('brush_stats_cache');
+            if (cachedData) {
+                try {
+                    allData = JSON.parse(cachedData);
+                    renderList(allData);
+                    loadingEl.style.display = 'none';
+                    checkDeepLink(); // 캐시 데이터로도 딥링크 처리 시도
+                } catch (e) {
+                    console.error("캐시 파싱 실패:", e);
                 }
-            })
-            .catch(err => alert("로딩 실패: " + err));
+            } else {
+                loadingEl.style.display = 'block';
+                document.getElementById('brushList').innerHTML = '';
+            }
+
+            // 2. 백그라운드 fetch
+            fetch(`${SCRIPT_URL}?action=getStats`)
+                .then(res => res.json())
+                .then(data => {
+                    allData = data;
+                    localStorage.setItem('brush_stats_cache', JSON.stringify(data)); // 캐시 저장
+                    renderList(data);
+                    loadingEl.style.display = 'none';
+
+                    checkDeepLink();
+                })
+                .catch(err => {
+                    console.error("로딩 실패:", err);
+                    if (!allData || allData.length === 0) {
+                        alert("데이터 로드 실패: " + err);
+                    }
+                });
+        }
+
+        function checkDeepLink() {
+            const params = new URLSearchParams(window.location.search);
+            const pUnit = params.get('unit');
+            const pLoc = params.get('location');
+
+            if (pUnit && pLoc) {
+                document.getElementById('searchInput').value = pLoc;
+                filterList();
+                setTimeout(() => {
+                    const items = document.querySelectorAll('.item-row');
+                    for (let item of items) {
+                        if (item.innerText.includes(pUnit) && item.innerText.includes(pLoc)) {
+                            item.click();
+                            break;
+                        }
+                    }
+                }, 200);
+            }
         }
 
         function renderList(data) {
             const list = document.getElementById('brushList');
             list.innerHTML = "";
-            
+
             data.forEach(item => {
                 let dateStr = "-";
-                if(item.lastDate) {
+                if (item.lastDate) {
                     const d = new Date(item.lastDate);
-                    dateStr = `${d.getFullYear().toString().slice(2)}.${d.getMonth()+1}.${d.getDate()}`;
+                    dateStr = `${d.getFullYear().toString().slice(2)}.${d.getMonth() + 1}.${d.getDate()}`;
                 }
                 const li = document.createElement('li');
                 li.className = 'item-row';
                 li.setAttribute('data-unit', item.unit);
                 li.setAttribute('data-location', item.location);
-                
+
                 li.onclick = () => loadHistory(item, li);
                 li.innerHTML = `
                     <div class="item-header">
@@ -169,8 +308,8 @@
 
         function filterList() {
             const keyword = document.getElementById('searchInput').value.toUpperCase();
-            const filtered = allData.filter(item => 
-                item.location.toUpperCase().includes(keyword) || 
+            const filtered = allData.filter(item =>
+                item.location.toUpperCase().includes(keyword) ||
                 String(item.unit).includes(keyword)
             );
             renderList(filtered);
@@ -184,38 +323,38 @@
             document.getElementById('detailText').innerText = "분석 중...";
 
             fetch(`${SCRIPT_URL}?action=getHistory&location=${encodeURIComponent(item.location)}&unit=${encodeURIComponent(item.unit)}`)
-            .then(res => res.json())
-            .then(dates => {
-                drawChart(dates);
-                document.getElementById('detailText').innerText = `총 ${dates.length}번 교체됨`;
-            })
-            .catch(err => {
-                console.error(err);
-                document.getElementById('detailText').innerText = "로딩 실패";
-            });
+                .then(res => res.json())
+                .then(dates => {
+                    drawChart(dates);
+                    document.getElementById('detailText').innerText = `총 ${dates.length}번 교체됨`;
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('detailText').innerText = "로딩 실패";
+                });
         }
 
         function drawChart(dateStrings) {
             const ctx = document.getElementById('myChart').getContext('2d');
-            const dates = dateStrings.map(d => new Date(d)).sort((a,b) => a-b);
+            const dates = dateStrings.map(d => new Date(d)).sort((a, b) => a - b);
             const labels = [];
             const diffDays = [];
 
             if (dates.length > 0) {
-                const startD = dates[0].toISOString().slice(2,10).replace(/-/g,'.');
-                labels.push(startD); 
-                diffDays.push(0);    
+                const startD = dates[0].toISOString().slice(2, 10).replace(/-/g, '.');
+                labels.push(startD);
+                diffDays.push(0);
             }
 
-            for(let i=1; i<dates.length; i++) {
-                const diffTime = Math.abs(dates[i] - dates[i-1]);
-                const diffDay = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                const d2 = dates[i].toISOString().slice(2,10).replace(/-/g,'.');
-                labels.push(`${d2}`); 
-                diffDays.push(diffDay); 
+            for (let i = 1; i < dates.length; i++) {
+                const diffTime = Math.abs(dates[i] - dates[i - 1]);
+                const diffDay = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const d2 = dates[i].toISOString().slice(2, 10).replace(/-/g, '.');
+                labels.push(`${d2}`);
+                diffDays.push(diffDay);
             }
 
-            if(myChart) myChart.destroy();
+            if (myChart) myChart.destroy();
 
             myChart = new Chart(ctx, {
                 type: 'line',
@@ -234,11 +373,12 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, ticks: { maxTicksLimit: 5 } } }, 
-                    plugins: { legend: { display: false } } 
+                    scales: { y: { beginAtZero: true, ticks: { maxTicksLimit: 5 } } },
+                    plugins: { legend: { display: false } }
                 }
             });
         }
     </script>
 </body>
+
 </html>

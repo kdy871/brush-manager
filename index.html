@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,8 +15,16 @@
             --btn-hover: #e3f2fd;
         }
 
-        body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; background: #fafafa; }
-        h2 { text-align: center; margin-bottom: 10px; }
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
 
         /* 호기 선택 탭 */
         .unit-selector {
@@ -24,6 +33,7 @@
             gap: 10px;
             margin-bottom: 20px;
         }
+
         .unit-btn {
             padding: 10px 30px;
             font-size: 18px;
@@ -33,6 +43,7 @@
             border-radius: 8px;
             font-weight: bold;
         }
+
         .unit-btn.active {
             background: #333;
             color: #fff;
@@ -52,9 +63,9 @@
             border: 1px solid #ddd;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .section-header {
             padding: 10px;
             text-align: center;
@@ -63,11 +74,21 @@
             color: white;
         }
 
-        .yard-theme .section-header { background-color: var(--yard-header); }
-        .yard-theme .content { background-color: var(--yard-bg); }
-        
-        .boiler-theme .section-header { background-color: var(--boiler-header); }
-        .boiler-theme .content { background-color: var(--boiler-bg); }
+        .yard-theme .section-header {
+            background-color: var(--yard-header);
+        }
+
+        .yard-theme .content {
+            background-color: var(--yard-bg);
+        }
+
+        .boiler-theme .section-header {
+            background-color: var(--boiler-header);
+        }
+
+        .boiler-theme .content {
+            background-color: var(--boiler-bg);
+        }
 
         .content {
             display: flex;
@@ -81,12 +102,13 @@
             flex: 1;
             min-width: 300px;
         }
+
         .part-title {
             text-align: center;
             font-weight: bold;
             margin-bottom: 10px;
             color: #444;
-            border-bottom: 2px solid rgba(0,0,0,0.1);
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
             padding-bottom: 5px;
         }
 
@@ -113,8 +135,11 @@
             align-items: center;
         }
 
-        .brush-btn:hover { background-color: var(--btn-hover); border-color: #2196f3; }
-        
+        .brush-btn:hover {
+            background-color: var(--btn-hover);
+            border-color: #2196f3;
+        }
+
         .brush-btn.clicked {
             background-color: #4caf50;
             color: white;
@@ -122,11 +147,11 @@
         }
 
         /* 가운데 회색 구분선 */
-        .grid-wrapper > div:nth-child(8n+4) {
+        .grid-wrapper>div:nth-child(8n+4) {
             position: relative;
         }
 
-        .grid-wrapper > div:nth-child(8n+4)::after {
+        .grid-wrapper>div:nth-child(8n+4)::after {
             content: "";
             position: absolute;
             right: -7px;
@@ -140,13 +165,17 @@
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
             z-index: 10000;
             justify-content: center;
             align-items: center;
             backdrop-filter: blur(2px);
         }
+
         .modal-box {
             background: white;
             padding: 25px;
@@ -154,8 +183,9 @@
             width: 90%;
             max-width: 350px;
             text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
+
         .modal-msg {
             font-size: 16px;
             font-weight: bold;
@@ -163,11 +193,13 @@
             line-height: 1.5;
             color: #333;
         }
+
         .modal-btns {
             display: flex;
             gap: 10px;
             justify-content: center;
         }
+
         .modal-btn {
             flex: 1;
             padding: 12px;
@@ -177,15 +209,23 @@
             font-weight: bold;
             cursor: pointer;
         }
-        .btn-confirm { background: #4caf50; color: white; }
-        .btn-cancel { background: #eee; color: #333; }
 
+        .btn-confirm {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #eee;
+            color: #333;
+        }
     </style>
 </head>
+
 <body>
 
-    <h2>🏭 브러쉬 교체 모니터링</h2>
-    
+    <h2>브러쉬 교체 모니터링</h2>
+
     <div class="unit-selector">
         <button class="unit-btn active" onclick="setUnit(3, this)">#3호기</button>
         <button class="unit-btn" onclick="setUnit(4, this)">#4호기</button>
@@ -232,7 +272,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyn5VaSQ0Fd21EgY5OcHQRPc7-oRpwQTiGzoaJlXnWeNCPPpM3CWUynSGPnjYKb5LO7jg/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyn5VaSQ0Fd21EgY5OcHQRPc7-oRpwQTiGzoaJlXnWeNCPPpM3CWUynSGPnjYKb5LO7jg/exec";
 
         let currentUnit = 3;
         let pendingData = null; // 확인창 승인을 대기하는 데이터 임시 저장용
@@ -248,7 +288,7 @@
 
         function createGrid(elementId, prefix, orderList) {
             const container = document.getElementById(elementId);
-            container.innerHTML = ""; 
+            container.innerHTML = "";
             orderList.forEach(level => {
                 const map = levelMapping[level];
                 cols.forEach(col => createBtn(container, prefix, map.left, col));
@@ -262,12 +302,12 @@
             btn.className = 'brush-btn';
             btn.innerHTML = `<div>${btnCode}</div>`;
 
-            btn.onclick = function() {
+            btn.onclick = function () {
                 // 클릭 시 즉시 전송하지 않고 확인창을 띄움
                 openConfirmModal(btnCode, btn);
-                
+
                 if (navigator.vibrate) {
-                    navigator.vibrate(30); 
+                    navigator.vibrate(30);
                 }
             };
             container.appendChild(btn);
@@ -278,7 +318,7 @@
             pendingData = { code: locationCode, el: element };
             const modal = document.getElementById('confirmModal');
             const msg = document.getElementById('modalMsg');
-            
+
             msg.innerHTML = `[${currentUnit}호기] <br> ${locationCode} 브러쉬를 <br>교체 입력하시겠습니까?`;
             modal.style.display = 'flex';
         }
@@ -329,4 +369,5 @@
         init();
     </script>
 </body>
+
 </html>
